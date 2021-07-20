@@ -24,8 +24,7 @@ class StopwatchViewHolder(
     //в stopwatchtimer добавить current, которыыйы буду использовать в цикле while
     fun bind(stopwatch: Stopwatch) {
         binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
-        binding.progressView.setPeriod(stopwatch.time)
-        binding.progressView.isVisible = false
+        binding.progressView.setPeriod(stopwatch.fullTime) //TODO если буду успевать, то сделать это в многопоточке (вынести в корутины)
 
         if (stopwatch.isStarted) {
             startTimer(stopwatch)
@@ -38,6 +37,7 @@ class StopwatchViewHolder(
     }
 
     private fun initButtonsListeners(stopwatch: Stopwatch) {
+
         binding.startPauseButton.setOnClickListener {
             if (stopwatch.isStarted) {
                 listener.stop(stopwatch.id, stopwatch.currentMs)
@@ -47,7 +47,7 @@ class StopwatchViewHolder(
         }
 
         binding.restartButton.setOnClickListener {
-            listener.restart(stopwatch.id, stopwatch.time)
+            listener.restart(stopwatch.id, stopwatch.fullTime)
             setBackgroundColors(resources.getColor(R.color.design_default_color_background))
         }
 
@@ -56,9 +56,11 @@ class StopwatchViewHolder(
             //mey be make geColor that changing with app theme
             setBackgroundColors(resources.getColor(R.color.design_default_color_background))
             binding.startPauseButton.setBackgroundColor(Color.WHITE)
+            binding.progressView.isInvisible = true
             stopwatch.currentMs = 0
             stopwatch.isStarted =false
         }
+
     }
 
     private fun startTimer(stopwatch: Stopwatch) {
@@ -68,29 +70,12 @@ class StopwatchViewHolder(
         timer = getCountDownTimer(stopwatch)
         timer?.start()
 
+        binding.progressView.setPeriod(stopwatch.fullTime)
         binding.blinkingIndicator.isInvisible = false
         binding.progressView.isVisible = true
         (binding.blinkingIndicator.background as? AnimationDrawable)?.start()
 
-    //m b not so and delete
-//        binding.progressView.setPeriod(stopwatch.time)        commented 19 07 23:23
-//        GlobalScope.launch {
-//            while (current < PER) {
-//                if(stopwatch.isStarted) {
-//                    current += INT
-//                    binding.progressView.setCurrent(current)
-//                    delay(INT)
-//                }
-//            }
-//        }
-//        GlobalScope.launch {
-//            var current = stopwatch.currentMs
-//            while (stopwatch.currentMs >= 0 && stopwatch.isStarted) {
-//                current -= INT
-//                binding.progressView.setCurrent(current)
-//                delay(INT)
-//            }
-//        }
+
     }
 
     private fun stopTimer(stopwatch: Stopwatch) {
@@ -105,7 +90,7 @@ class StopwatchViewHolder(
 
     private fun getCountDownTimer(stopwatch: Stopwatch): CountDownTimer {
         return object : CountDownTimer(
-            stopwatch.time, UNIT_HUNDRED_MS
+            stopwatch.fullTime, UNIT_HUNDRED_MS
         ) {
             val interval = UNIT_HUNDRED_MS
 
@@ -138,7 +123,7 @@ class StopwatchViewHolder(
         return if (count / 10L > 0) "$count" else "0$count"
     }
 
-    fun setBackgroundColors(color: Int){
+    private fun setBackgroundColors(color: Int){
         binding.root.setBackgroundColor(color)
         binding.startPauseButton.setBackgroundColor(color)
         binding.restartButton.setBackgroundColor(color)
@@ -158,3 +143,27 @@ class StopwatchViewHolder(
     }
 
 }
+
+//если удалить включенный таймер ( на 6 сек) , то он создастся новым красным, то есть выполненным
+
+
+//этот код был в starttimer в самом конце
+//m b not so and delete
+//        binding.progressView.setPeriod(stopwatch.time)        commented 19 07 23:23
+//        GlobalScope.launch {
+//            while (current < PER) {
+//                if(stopwatch.isStarted) {
+//                    current += INT
+//                    binding.progressView.setCurrent(current)
+//                    delay(INT)
+//                }
+//            }
+//        }
+//        GlobalScope.launch {
+//            var current = stopwatch.currentMs
+//            while (stopwatch.currentMs >= 0 && stopwatch.isStarted) {
+//                current -= INT
+//                binding.progressView.setCurrent(current)
+//                delay(INT)
+//            }
+//        }

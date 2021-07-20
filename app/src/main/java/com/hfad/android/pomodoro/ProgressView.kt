@@ -42,7 +42,7 @@ class ProgressView @JvmOverloads constructor(
         super.onDraw(canvas)
         if (periodMs == 0L || currentMs == 0L) return
         val startAngel = (((currentMs % periodMs).toFloat() / periodMs) * 360)
-        canvas.drawArc(0f, 0f, width.toFloat(), height.toFloat(), -90f, startAngel, true, paint)
+        canvas.drawArc(height.toFloat()* SCALE_SIZE_15, width.toFloat()* SCALE_SIZE_15, width.toFloat() * SCALE_SIZE_85, height * SCALE_SIZE_85, -90f, startAngel, true, paint)
     }
 
     fun setCurrent(current:Long){
@@ -58,5 +58,7 @@ class ProgressView @JvmOverloads constructor(
 
     private companion object {
         private const val FILL = 0
+        private const val SCALE_SIZE_85 = 0.95f
+        private const val SCALE_SIZE_15 = 0.05f
     }
 }
