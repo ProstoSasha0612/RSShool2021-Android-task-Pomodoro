@@ -32,6 +32,7 @@ class StopwatchViewHolder(
             stopTimer(stopwatch)
         }
         initButtonsListeners(stopwatch)
+        setBackgroundColors(resources.getColor(R.color.design_default_color_background))
 
 
     }

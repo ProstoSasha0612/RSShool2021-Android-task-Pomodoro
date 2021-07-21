@@ -42,10 +42,9 @@ class MainActivity : AppCompatActivity(), StopwatchListener {
     //TODO(): переписать это, так как не очень эффективно создавать всё время новый список (не сработало, так как для sumbitList должная меняться ссылка, а в таком случае она не меняется)
     //Todo но стоит попробовать сделать через notifyItemChanged()
     override fun start(id: Int) {
-//        val timerToStop = stopwatches.firstOrNull { it.isStarted }
-//        timerToStop?.let { stop(it.id,it.currentMs) } //останавливаем работающий таймер
-//        changeStopwatch(id, null, true) // запускаем новый таймер
-        changeStopwatch(id, stopwatches[id].currentMs, true)
+        val timerToStop = stopwatches.firstOrNull { it.isStarted }
+        timerToStop?.let { stop(it.id,it.currentMs) } //останавливаем работающий таймер
+        changeStopwatch(id, null, true) // запускаем новый таймер
     }
 
     override fun stop(id: Int, currentMs: Long) {
@@ -65,7 +64,7 @@ class MainActivity : AppCompatActivity(), StopwatchListener {
         val newTimers = mutableListOf<Stopwatch>()
         stopwatches.forEach {
             if (it.id == id) {
-                newTimers.add(Stopwatch(id, currentMs ?: it.currentMs, isStarted))
+                newTimers.add(Stopwatch(id, currentMs ?: it.currentMs, isStarted, it.fullTime))
             } else {
                 newTimers.add(it)
             }
@@ -75,9 +74,10 @@ class MainActivity : AppCompatActivity(), StopwatchListener {
         stopwatches.addAll(newTimers)
     }
 //        private fun changeStopwatch(id: Int, currentMs: Long?, isStarted: Boolean){
-//            val timerToChange = stopwatches.first { it.id == id }
-//            stopwatches[id].isStarted = isStarted
-//            stopwatches[id].currentMs = currentMs?:0
+//            val timerToChange = stopwatches.first { it.id == id }.id
+//            stopwatches[timerToChange].isStarted = isStarted
+//            stopwatches[timerToChange].currentMs = currentMs?:0
+////            stopwatches[id].fullTime = timerToChange.fullTime
 //            stopwatchAdapter.notifyItemChanged(id)
 //        }
 
