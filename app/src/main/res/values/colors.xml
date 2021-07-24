@@ -9,4 +9,6 @@
     <color name="white">#FFFFFFFF</color>
     <color name="red_circle">#DD0808</color>
     <color name="transparent">#00000000</color>
+    <color name="light_red">#BA4F4F</color>
+
 </resources>

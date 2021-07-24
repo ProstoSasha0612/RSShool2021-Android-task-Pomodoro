@@ -24,25 +24,27 @@ class StopwatchViewHolder(
     fun bind(stopwatch: Stopwatch) {
         binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
         binding.progressView.setPeriod(stopwatch.fullTime)
-
-//            if (stopwatch.isStarted) {
-//                startTimer(stopwatch)
-//                setIsRecyclable(false)
-//            } else {
-//                stopTimer(stopwatch)
-//                setIsRecyclable(true)
-//            }
-
-        if (stopwatch.isStarted) {
-            startTimer(stopwatch)
-        } else {
-            stopTimer(stopwatch)
+        binding.progressView.setCurrent(stopwatch.currentMs)
+        if(stopwatch.currentMs <= 100L){
+            setBackgroundColors(resources.getColor(R.color.red_circle))
         }
 
-        if (stopwatch.wasStarted) {
-            binding.progressView.setCurrent(0)
-        }
-        if(stopwatch.currentMs == 0L && !stopwatch.isStarted){
+            if (stopwatch.isStarted) {
+                startTimer(stopwatch)
+            } else {
+                stopTimer(stopwatch)
+            }
+
+//        if (stopwatch.isStarted) {
+//            startTimer(stopwatch)
+//        } else {
+//            stopTimer(stopwatch)
+//        }
+
+//        if (stopwatch.wasStarted) {
+//            binding.progressView.setCurrent(0)
+//        }
+        if (stopwatch.currentMs <= 100L) {
             binding.startPauseButton.setImageResource(R.drawable.ic_baseline_restore_24)
             setBackgroundColors(resources.getColor(R.color.red_circle))
         } else setBackgroundColors(resources.getColor(R.color.design_default_color_background))
@@ -54,7 +56,7 @@ class StopwatchViewHolder(
     private fun initButtonsListeners(stopwatch: Stopwatch) {
 
         binding.startPauseButton.setOnClickListener {
-            if (stopwatch.currentMs <= 0L) {
+            if (stopwatch.currentMs <= 100L) {
                 listener.restart(stopwatch.id, stopwatch.fullTime)
             }
 
@@ -104,12 +106,12 @@ class StopwatchViewHolder(
 
     private fun getCountDownTimer(stopwatch: Stopwatch): CountDownTimer {
         return object : CountDownTimer(
-            PERIOD_DAY, UNIT_HUNDRED_MS
+            stopwatch.currentMs, UNIT_HUNDRED_MS
         ) {
             val interval = UNIT_HUNDRED_MS
 
             override fun onTick(millisUntilFinished: Long) {
-                stopwatch.currentMs -= interval
+                stopwatch.currentMs = millisUntilFinished
                 binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
                 binding.progressView.setCurrent(stopwatch.currentMs)
                 if (stopwatch.currentMs <= 0) {
@@ -117,6 +119,17 @@ class StopwatchViewHolder(
                     onFinish()
                 }
             }
+
+//            val totalMs = stopwatch.currentMs
+//            override fun onTick(millisUntilFinished: Long) {
+//
+//                if (stopwatch.isStarted) {
+//                    binding.stopwatchTimer.text = millisUntilFinished.displayTime()
+//                    stopwatch.currentMs = millisUntilFinished
+//                    binding.progressView.setCurrent(stopwatch.fullTime - stopwatch.currentMs)
+//                }
+//
+//            }
 
             override fun onFinish() {
                 binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
