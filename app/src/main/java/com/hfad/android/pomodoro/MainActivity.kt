@@ -30,15 +30,15 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
         _binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        if(savedInstanceState != null){
+        if (savedInstanceState != null) {
             nextId = savedInstanceState.getInt(NEXT_ID)
             val size = savedInstanceState.getInt(STOPWATCHES_SIZE)
-            for(i in 0 until size){
+            for (i in 0 until size) {
                 val id = savedInstanceState.getInt("$ID$i")
                 val fullTime = savedInstanceState.getLong("$FULL_TIME$i")
                 val currentMs = savedInstanceState.getLong("$CURRENT_MS$i")
                 val isStarted = savedInstanceState.getBoolean("$IS_STARTED$i")
-                stopwatches.add(Stopwatch(id,currentMs,isStarted,fullTime))
+                stopwatches.add(Stopwatch(id, currentMs, isStarted, fullTime))
             }
             stopwatchAdapter.submitList(stopwatches)
         }
@@ -59,11 +59,11 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
         }
 
         binding.addNewStopwatchButton.setOnClickListener {
-            val time = if (binding.editText.text.isNotEmpty())
-                binding.editText.text.toString().toLong() * 1000 * 60
+            val time = if (binding.editTextMinutes.text.isNotEmpty())
+                binding.editTextMinutes.text.toString().toLong() * 1000 * 60
             else STANDARD_TIME
 
-            if(time != 0L) {
+            if (time != 0L) {
                 stopwatches.add(Stopwatch(nextId++, time, false))
                 stopwatchAdapter.submitList(stopwatches.toList())
             }
@@ -76,7 +76,7 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
     //Todo но стоит попробовать сделать через notifyItemChanged()
     override fun start(id: Int) {
         val timerToStop = stopwatches.firstOrNull { it.isStarted }
-        timerToStop?.let { stop(it.id,it.currentMs) } //останавливаем работающий таймер
+        timerToStop?.let { stop(it.id, it.currentMs) } //останавливаем работающий таймер
         changeStopwatch(id, null, true) // запускаем новый таймер
     }
 
@@ -101,6 +101,7 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
         val newTimers = mutableListOf<Stopwatch>()
         stopwatches.forEach {
             if (it.id == id) {
+                it.wasStarted = true
                 newTimers.add(Stopwatch(id, currentMs ?: it.currentMs, isStarted, it.fullTime))
             } else {
                 newTimers.add(it)
@@ -110,36 +111,31 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
         stopwatches.clear()
         stopwatches.addAll(newTimers)
     }
-//        private fun changeStopwatch(id: Int, currentMs: Long?, isStarted: Boolean){
-//            val timerToChange = stopwatches.first { it.id == id }.id
-//            stopwatches[timerToChange].isStarted = isStarted
-//            stopwatches[timerToChange].currentMs = currentMs?:0
-////            stopwatches[id].fullTime = timerToChange.fullTime
-//            stopwatchAdapter.notifyItemChanged(id)
-//        }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
 
-        outState.putInt(NEXT_ID,nextId)
-        outState.putInt(STOPWATCHES_SIZE,stopwatches.size)
-        for(i in stopwatches.indices){
-            outState.putLong("$CURRENT_MS$i",stopwatches[i].currentMs)
-            outState.putLong("$FULL_TIME$i",stopwatches[i].fullTime)
-            outState.putBoolean("$IS_STARTED$i",stopwatches[i].isStarted)
-            outState.putInt("$ID$i",stopwatches[i].id)
+        outState.putInt(NEXT_ID, nextId)
+        outState.putInt(STOPWATCHES_SIZE, stopwatches.size)
+        for (i in stopwatches.indices) {
+            outState.putLong("$CURRENT_MS$i", stopwatches[i].currentMs)
+            outState.putLong("$FULL_TIME$i", stopwatches[i].fullTime)
+            outState.putBoolean("$IS_STARTED$i", stopwatches[i].isStarted)
+            outState.putInt("$ID$i", stopwatches[i].id)
         }
+        super.onSaveInstanceState(outState)
     }
+
     @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
     fun onAppBackground() {
-        val startIntent = Intent(this,ForegroundService::class.java)
+        if (stopwatches.firstOrNull() { it.isStarted } == null) return //не запускаем сервис, если нету запущенного таймера
+        val startIntent = Intent(this, ForegroundService::class.java)
         startIntent.putExtra(COMMAND_ID, COMMAND_START)
-        startIntent.putExtra(STARTED_TIMER_TIME_MS,getPlayingStopwatch().currentMs) //TODO здесь передавать время включенного секундомера, и внутри его обрабатывать
+        startIntent.putExtra(STARTED_TIMER_TIME_MS, getPlayingStopwatch().currentMs)
         startService(startIntent)
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_START)
-    fun onAppForeground(){
+    fun onAppForeground() {
         val stopIntent = Intent(this, ForegroundService::class.java)
         stopIntent.putExtra(COMMAND_ID, COMMAND_STOP)
         startService(stopIntent)
@@ -151,11 +147,10 @@ class MainActivity : AppCompatActivity(), StopwatchListener, LifecycleObserver {
         stopwatches.clear()
     }
 
-    companion object{
-        private const val STANDARD_TIME = 100L * 60 //5000L * 60
-        private const val INTERVAL = 10L
+    companion object {
+        private const val STANDARD_TIME = 100L * 60 //6 secs
         private const val NEXT_ID = "NEXT ID"
-        private const val STOPWATCHES_SIZE = "Stopwatche size"
+        private const val STOPWATCHES_SIZE = "Stopwatches size"
 
         private const val CURRENT_MS = "Current ms"
         private const val IS_STARTED = "Is started"

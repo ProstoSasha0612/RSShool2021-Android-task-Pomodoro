@@ -21,15 +21,26 @@ class StopwatchViewHolder(
     private var timer: CountDownTimer? = null
 
 
-    //в stopwatchtimer добавить current, которыыйы буду использовать в цикле while
     fun bind(stopwatch: Stopwatch) {
         binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
-        binding.progressView.setPeriod(stopwatch.fullTime) //TODO если буду успевать, то сделать это в многопоточке (вынести в корутины)
+        binding.progressView.setPeriod(stopwatch.fullTime)
+
+//            if (stopwatch.isStarted) {
+//                startTimer(stopwatch)
+//                setIsRecyclable(false)
+//            } else {
+//                stopTimer(stopwatch)
+//                setIsRecyclable(true)
+//            }
 
         if (stopwatch.isStarted) {
             startTimer(stopwatch)
         } else {
             stopTimer(stopwatch)
+        }
+
+        if (stopwatch.wasStarted) {
+            binding.progressView.setCurrent(0)
         }
         if(stopwatch.currentMs == 0L && !stopwatch.isStarted){
             binding.startPauseButton.setImageResource(R.drawable.ic_baseline_restore_24)
@@ -43,7 +54,7 @@ class StopwatchViewHolder(
     private fun initButtonsListeners(stopwatch: Stopwatch) {
 
         binding.startPauseButton.setOnClickListener {
-            if (stopwatch.currentMs <= 0L) { //!stopwatch.isStarted &&
+            if (stopwatch.currentMs <= 0L) {
                 listener.restart(stopwatch.id, stopwatch.fullTime)
             }
 
@@ -54,10 +65,6 @@ class StopwatchViewHolder(
             }
         }
 
-//        binding.restartButton.setOnClickListener {
-//            listener.restart(stopwatch.id, stopwatch.fullTime)
-//            setBackgroundColors(resources.getColor(R.color.design_default_color_background))
-//        }
 
         binding.deleteButton.setOnClickListener {
             listener.delete(stopwatch.id)
@@ -93,7 +100,6 @@ class StopwatchViewHolder(
         binding.blinkingIndicator.isInvisible = true
         (binding.blinkingIndicator.background as? AnimationDrawable)?.stop()
         stopwatch.isStarted = false
-
     }
 
     private fun getCountDownTimer(stopwatch: Stopwatch): CountDownTimer {
@@ -115,7 +121,7 @@ class StopwatchViewHolder(
             override fun onFinish() {
                 binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
                 stopTimer(stopwatch)
-                //TODO Fix it (color saving fon new holders)
+
                 setBackgroundColors(resources.getColor(R.color.red_circle))
                 binding.startPauseButton.setImageResource(R.drawable.ic_baseline_restore_24)
             }
@@ -155,27 +161,3 @@ class StopwatchViewHolder(
     }
 
 }
-
-//если удалить включенный таймер ( на 6 сек) , то он создастся новым красным, то есть выполненным
-
-
-//этот код был в starttimer в самом конце
-//m b not so and delete
-//        binding.progressView.setPeriod(stopwatch.time)        commented 19 07 23:23
-//        GlobalScope.launch {
-//            while (current < PER) {
-//                if(stopwatch.isStarted) {
-//                    current += INT
-//                    binding.progressView.setCurrent(current)
-//                    delay(INT)
-//                }
-//            }
-//        }
-//        GlobalScope.launch {
-//            var current = stopwatch.currentMs
-//            while (stopwatch.currentMs >= 0 && stopwatch.isStarted) {
-//                current -= INT
-//                binding.progressView.setCurrent(current)
-//                delay(INT)
-//            }
-//        }

@@ -20,7 +20,7 @@ class ProgressView @JvmOverloads constructor(
     private var style = FILL
     private val paint = Paint()
 
-    //TODO не понимаю код в блоке init
+    var wasStarted = false
     init {
         if (attrs != null) {
             val styledAttrs = context.theme.obtainStyledAttributes(
@@ -47,6 +47,7 @@ class ProgressView @JvmOverloads constructor(
 
     fun setCurrent(current:Long){
         currentMs = current
+        wasStarted = true
         invalidate()
     }
 
