@@ -21,7 +21,6 @@ class StopwatchViewHolder(
     private var timer: CountDownTimer? = null
 
 
-    //в stopwatchtimer добавить current, которыыйы буду использовать в цикле while
     fun bind(stopwatch: Stopwatch) {
         binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
         binding.progressView.setPeriod(stopwatch.fullTime) //TODO если буду успевать, то сделать это в многопоточке (вынести в корутины)
@@ -31,22 +30,15 @@ class StopwatchViewHolder(
         } else {
             stopTimer(stopwatch)
         }
-        if(stopwatch.currentMs == 0L && !stopwatch.isStarted){
-            binding.startPauseButton.setImageResource(R.drawable.ic_baseline_restore_24)
-            setBackgroundColors(resources.getColor(R.color.red_circle))
-        } else setBackgroundColors(resources.getColor(R.color.design_default_color_background))
-
         initButtonsListeners(stopwatch)
+        setBackgroundColors(resources.getColor(R.color.design_default_color_background))
+
 
     }
 
     private fun initButtonsListeners(stopwatch: Stopwatch) {
 
         binding.startPauseButton.setOnClickListener {
-            if (stopwatch.currentMs <= 0L) { //!stopwatch.isStarted &&
-                listener.restart(stopwatch.id, stopwatch.fullTime)
-            }
-
             if (stopwatch.isStarted) {
                 listener.stop(stopwatch.id, stopwatch.currentMs)
             } else {
@@ -54,10 +46,10 @@ class StopwatchViewHolder(
             }
         }
 
-//        binding.restartButton.setOnClickListener {
-//            listener.restart(stopwatch.id, stopwatch.fullTime)
-//            setBackgroundColors(resources.getColor(R.color.design_default_color_background))
-//        }
+        binding.restartButton.setOnClickListener {
+            listener.restart(stopwatch.id, stopwatch.fullTime)
+            setBackgroundColors(resources.getColor(R.color.design_default_color_background))
+        }
 
         binding.deleteButton.setOnClickListener {
             listener.delete(stopwatch.id)
@@ -66,7 +58,7 @@ class StopwatchViewHolder(
             binding.startPauseButton.setBackgroundColor(Color.WHITE)
             binding.progressView.isInvisible = true
             stopwatch.currentMs = 0
-            stopwatch.isStarted = false
+            stopwatch.isStarted =false
         }
 
     }
@@ -98,7 +90,7 @@ class StopwatchViewHolder(
 
     private fun getCountDownTimer(stopwatch: Stopwatch): CountDownTimer {
         return object : CountDownTimer(
-            PERIOD_DAY, UNIT_HUNDRED_MS
+            stopwatch.fullTime, UNIT_HUNDRED_MS
         ) {
             val interval = UNIT_HUNDRED_MS
 
@@ -106,10 +98,6 @@ class StopwatchViewHolder(
                 stopwatch.currentMs -= interval
                 binding.stopwatchTimer.text = stopwatch.currentMs.displayTime()
                 binding.progressView.setCurrent(stopwatch.currentMs)
-                if (stopwatch.currentMs <= 0) {
-                    timer?.cancel()
-                    onFinish()
-                }
             }
 
             override fun onFinish() {
@@ -117,7 +105,6 @@ class StopwatchViewHolder(
                 stopTimer(stopwatch)
                 //TODO Fix it (color saving fon new holders)
                 setBackgroundColors(resources.getColor(R.color.red_circle))
-                binding.startPauseButton.setImageResource(R.drawable.ic_baseline_restore_24)
             }
         }
     }
@@ -136,9 +123,10 @@ class StopwatchViewHolder(
         return if (count / 10L > 0) "$count" else "0$count"
     }
 
-    private fun setBackgroundColors(color: Int) {
+    private fun setBackgroundColors(color: Int){
         binding.root.setBackgroundColor(color)
         binding.startPauseButton.setBackgroundColor(color)
+        binding.restartButton.setBackgroundColor(color)
         binding.deleteButton.setBackgroundColor(color)
     }
 
@@ -147,7 +135,7 @@ class StopwatchViewHolder(
         private const val START_TIME = "00:00:00"
         private const val UNIT_TEN_MS = 10L
         private const val UNIT_HUNDRED_MS = 100L
-        private const val PERIOD_DAY = 1000L * 60L * 60L * 24L // Day
+        private const val PERIOD = 1000L * 60L * 60L * 24L // Day
 
         private const val INT = 100L
         private const val PER = 1000L * 30
